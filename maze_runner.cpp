@@ -81,7 +81,7 @@ bool walk(Position pos) {
 
     // Exiba o labirinto atual
     print_maze();
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     // Verifique as posições adjacentes (cima, baixo, esquerda, direita)
     std::vector<Position> directions = {
