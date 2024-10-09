@@ -18,6 +18,7 @@ Maze maze;
 int num_rows;
 int num_cols;
 bool saida_encontrada = 0;
+int active_threads;
 
 // Função para carregar o labirinto de um arquivo
 Position load_maze(const std::string& file_name) {
@@ -70,9 +71,11 @@ bool is_valid_position(int row, int col) {
 
 // Função principal para navegar pelo labirinto
 void walk(Position pos) {
+    active_threads++;
     // Verifique se a posição atual é a saída
     if (maze[pos.row][pos.col] == 's') {
         saida_encontrada = true;
+        active_threads--;
         return; // Saída encontrada
     }
 
@@ -96,7 +99,10 @@ void walk(Position pos) {
             valid_count++;
         }
     }
-
+    if(valid_count = 0){
+        active_threads--;
+        return;
+    }
     // Tente explorar as posições adjacentes
     for (const auto& direction : directions) {
         if (is_valid_position(direction.row, direction.col)) {
@@ -104,9 +110,11 @@ void walk(Position pos) {
             if (valid_count > 1) {
                 std::thread helper(walk, direction);
                 helper.detach(); // Solta a thread 
+                active_threads--;
             } else {
-                walk(direction); // Não sei se aqui era pra fazer assim, mas se não tiver intereseção eu simplesmente chamo na recursiva
+                walk(direction); // Não sei se aqui era pra fazer assim, mas se não tiver intereseção eu chamo na recursiva
             }
+            active_threads--;
         }
     }
 }
@@ -126,13 +134,18 @@ int main(int argc, char* argv[]) {
     std::thread start(walk,initial_pos);
     
     while (!saida_encontrada) {
+        if(active_threads == 1){
+            break;
+        }
         print_maze();
-        //std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
     if (saida_encontrada) {
+        print_maze();
         std::cout << "Saída encontrada!" << std::endl;
     } else {
+        print_maze();
         std::cout << "Não foi possível encontrar a saída." << std::endl;
     }
 
